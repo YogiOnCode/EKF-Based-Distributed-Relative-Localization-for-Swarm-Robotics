@@ -1,51 +1,70 @@
 # EKF-Based Distributed Relative Localization for Swarm Robotics
 
-## Overview
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-013243?logo=numpy&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-11557C)
 
-This project implements a distributed relative localization system for a swarm of small drones using Extended Kalman Filter (EKF) techniques. The primary goal is to achieve accurate localization in multi-robot systems operating under resource constraints and high speeds, where traditional GPS or fixed ultra-wideband (UWB) systems may not be suitable.
+A simulation of **relative localization for a swarm of micro-drones** using an **Extended Kalman Filter**.
+Each drone estimates the relative position and heading of its neighbours by fusing its own odometry
+(velocity and yaw rate) with **UWB range measurements**. It does not need GPS or fixed UWB anchors.
 
-## Project Objectives
+---
 
-The main objectives of this project are:
+## Approach
 
-- **Accurate Localization:** To maintain precise relative positioning among a swarm of drones in a 2D plane using UWB communication and EKF-based sensor fusion.
+Each pair of robots *(i, j)* tracks the relative state **[x, y, ψ]** of *j* in *i*'s body frame.
 
-- **Scalability and Robustness:** To design a system that can function reliably under various conditions, with emphasis on high-speed operations and significant resource limitations of small drones.
+| EKF step | Model |
+| --- | --- |
+| **Prediction** | Relative kinematics driven by the noisy velocity and yaw-rate inputs of both robots |
+| **Measurement** | UWB range: `d = √(x² + y²)` |
+| **Linearization** | Analytic Jacobians F (state), B (inputs) and H (measurement) |
+| **Noise** | Tunable process covariance Q and measurement covariance R |
 
-- **Simulation Framework:** To provide a Python-based simulation environment that models the behavior of flying micro-robots, testing the EKF's performance in both random and controlled flight scenarios.
+The simulator converts the relative estimates back to world coordinates so they can be compared with the
+ground truth in real time.
 
-## Implementation Details
+## Scenarios
 
-The implementation consists of several key components:
+- **Random flight:** every robot changes velocity and yaw rate at random every 100 steps.
+- **Formation flight:** after an initial random phase, a PID controller drives robot 0 to hold a fixed
+  offset from robot 1, using the EKF estimate as feedback.
 
-- **Communication System:** The drones are equipped with UWB radios that facilitate accurate distance measurements using a round-robin communication model. This enables each drone to estimate its relative position to others by exchanging distance data.
+To switch scenarios, toggle `random_fly_inputs` / `formation_inputs` in `simulation.py`.
 
-- **Extended Kalman Filter (EKF):** The EKF is used to estimate the relative positions of the drones by fusing data from onboard sensors and UWB measurements. The state and measurement functions are adapted to handle the non-linearities inherent in the system.
+## Getting started
 
-- **Simulation Environment:** The project includes a Python simulator that visualizes the swarm behavior and evaluates the performance of the EKF in estimating the drones' positions. The simulator allows for the tuning of Process Noise Covariance and Measurement Noise Covariance matrices for optimal performance.
+```bash
+git clone https://github.com/YogiOnCode/EKF-Based-Distributed-Relative-Localization-for-Swarm-Robotics.git
+cd EKF-Based-Distributed-Relative-Localization-for-Swarm-Robotics
+pip install numpy pandas matplotlib
+python simulation.py
+```
 
-## Key Features
-
-- **Sensor Fusion:** Integrates data from inertial measurement units (IMU), optical flow sensors, and UWB radios to maintain accurate localization.
-
-- **Scenarios:** Evaluates performance through two scenarios - random movements and controlled formation flights, highlighting the EKF's accuracy and reliability.
-
-- **Visualization:** Utilizes `matplotlib` to display the true and estimated positions of the drones in a simulated environment.
+The default setup simulates 10 robots in a 10 m × 10 m arena for 50 s, with σ = 0.05 m UWB noise.
 
 ## Results
 
-The simulation results demonstrate the estimator's accuracy, with errors consistently within 2% of the ground truth in both random and controlled scenarios. Despite occasional outliers, the system shows robustness in maintaining accurate relative positions.
+- Estimated positions track the ground truth closely, with errors **consistently within about 2%** in both scenarios.
+- A few runs show outliers with larger divergence, which points to room for better covariance tuning.
 
-## Limitations and Future Work
+## Repository structure
 
-### Limitations
+```
+├── ekf.py              # Extended Kalman Filter (prediction + UWB range update)
+├── data_generator.py   # Motion model, noisy inputs/measurements, PID formation control
+└── simulation.py       # Animated simulation and error plots
+```
 
-- **High Variance in Outlier Cases:** Some simulations exhibit significant divergence from the mean, indicating areas for improvement in handling outlier cases.
+## Future work
 
-- **2D Movements:** The current implementation is limited to two-dimensional movements, restricting applicability in scenarios where height (Z-axis) is a critical factor.
+- Extend the estimator to **3D** (altitude), for aerial and underwater swarms.
+- Reduce variance in outlier cases with adaptive noise estimation.
 
-### Future Work
+## Tech stack
 
-- **Reducing Variance:** Focus on refining the algorithm to handle outlier cases more effectively and ensure consistent performance across different scenarios.
+Python · NumPy · pandas · Matplotlib (animation)
 
-- **3D Extension:** Expand the estimator's capabilities to include three-dimensional localization, enabling applications in aerial and underwater robotics.
+## Author
+
+**Yogeswaran Amsavalli** · [GitHub](https://github.com/YogiOnCode)
