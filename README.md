@@ -37,7 +37,7 @@ To switch scenarios, toggle `random_fly_inputs` / `formation_inputs` in `simulat
 ```bash
 git clone https://github.com/YogiOnCode/EKF-Based-Distributed-Relative-Localization-for-Swarm-Robotics.git
 cd EKF-Based-Distributed-Relative-Localization-for-Swarm-Robotics
-pip install numpy pandas matplotlib
+pip install -r requirements.txt
 python simulation.py
 ```
 
@@ -64,6 +64,10 @@ The default setup simulates 10 robots in a 10 m × 10 m arena for 50 s, with σ 
 ## Tech stack
 
 Python · NumPy · pandas · Matplotlib (animation)
+
+## License
+
+Released under the [MIT License](LICENSE).
 
 ## Author
 
